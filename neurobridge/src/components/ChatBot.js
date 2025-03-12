@@ -5,10 +5,6 @@ const ChatBot = () => {
     const chatRef = useRef(null);
     const [chatHistory, setChatHistory] = useState([]);
 
-    const apiKey = process.env.REACT_APP_OPENAI_KEY;
-
-
-
     useEffect(() => {
         if (chatRef.current) {
             chatRef.current.style.width = "100vw";
@@ -25,17 +21,16 @@ const ChatBot = () => {
                 return chatHistory;
             };
 
-            // Setup OpenAI API connection
+            // Setup Chat API to use Netlify Function
             chatRef.current.connect = {
-                url: "https://api.openai.com/v1/chat/completions",
+                url: "/.netlify/functions/chat",
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${apiKey}`
+                    "Content-Type": "application/json"
                 },
                 stream: true,
                 handler: (body, signals) => {
-                    console.log("Outgoing Request:", body);
+                    console.log("Outgoing Request to Netlify:", body);
 
                     const formattedBody = {
                         model: "gpt-3.5-turbo", // Cheapest OpenAI model
@@ -55,17 +50,17 @@ const ChatBot = () => {
                         temperature: 0.5
                     };
 
-                    fetch("https://api.openai.com/v1/chat/completions", {
+                    // ✅ Call Netlify function instead of OpenAI API
+                    fetch("/.netlify/functions/chat", {
                         method: "POST",
                         headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${apiKey}`
+                            "Content-Type": "application/json"
                         },
                         body: JSON.stringify(formattedBody)
                     })
                         .then(response => response.json())
                         .then(data => {
-                            console.log("OpenAI Response:", data);
+                            console.log("Netlify Function Response:", data);
                             if (data.choices && data.choices.length > 0) {
                                 const responseText = data.choices[0].message.content;
                                 signals.onResponse({ text: responseText });
@@ -79,7 +74,7 @@ const ChatBot = () => {
                                 setChatHistory(newHistory);
                                 localStorage.setItem("chatHistory", JSON.stringify(newHistory));
                             } else {
-                                signals.onResponse({ error: "No response from OpenAI" });
+                                signals.onResponse({ error: "No response from AI" });
                             }
                         })
                         .catch(error => {
@@ -95,7 +90,7 @@ const ChatBot = () => {
                 stopAfterSubmit: true
             };
         }
-    }, [apiKey, chatHistory]);
+    }, [chatHistory]);
 
     return (
         <div className="chatbot-container">
