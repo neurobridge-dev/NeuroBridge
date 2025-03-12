@@ -3,18 +3,27 @@ import "deep-chat"; // Import DeepChat Web Component
 
 const ChatBot = () => {
     const chatRef = useRef(null);
-    const [lastResponse, setLastResponse] = useState(""); // Store last AI response
+    const [chatHistory, setChatHistory] = useState([]);
 
     const apiKey = process.env.REACT_APP_OPENAI_KEY;
 
     useEffect(() => {
         if (chatRef.current) {
-            chatRef.current.style.width = "400px";
-            chatRef.current.style.height = "500px";
-            chatRef.current.style.borderRadius = "10px";
+            chatRef.current.style.width = "100vw";
+            chatRef.current.style.height = "calc(100vh - 100px)";
+            chatRef.current.style.marginTop = "100px";
+            chatRef.current.style.borderRadius = "0";
+            chatRef.current.style.padding = "0";
 
-            console.log("Using API Key:", apiKey ? "Found" : "Not Found");
+            // Load chat history
+            chatRef.current.loadHistory = (index) => {
+                if (chatHistory.length === 0) {
+                    return [{ "text": "Hey, how can I help you today?", "role": "ai" }];
+                }
+                return chatHistory;
+            };
 
+            // Setup OpenAI API connection
             chatRef.current.connect = {
                 url: "https://api.openai.com/v1/chat/completions",
                 method: "POST",
@@ -22,17 +31,19 @@ const ChatBot = () => {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${apiKey}`
                 },
+                stream: true,
                 handler: (body, signals) => {
                     console.log("Outgoing Request:", body);
 
                     const formattedBody = {
-                        model: "gpt-3.5-turbo", // cheapest model
+                        model: "gpt-3.5-turbo", // Cheapest OpenAI model
                         messages: [
                             {
                                 role: "system",
-                                content: "You are a patient, neurodivergent-friendly chatbot.Use clear, direct, and literal language." +
-                                    "Provide structured responses and avoid metaphors unless explained." +
-                                    "Ask if the user wants additional context. Be accommodating to sensory sensitivities and offer multiple response formats when possible."
+                                content: "You are a patient, neurodivergent-friendly chatbot. " +
+                                    "Use clear, direct, and literal language. Provide structured responses " +
+                                    "and avoid metaphors unless explained. Ask if the user wants additional context. " +
+                                    "Be accommodating to sensory sensitivities and offer multiple response formats when possible."
                             },
                             ...body.messages.map(msg => ({
                                 role: msg.role || "user",
@@ -55,11 +66,16 @@ const ChatBot = () => {
                             console.log("OpenAI Response:", data);
                             if (data.choices && data.choices.length > 0) {
                                 const responseText = data.choices[0].message.content;
-                                setLastResponse(responseText);
                                 signals.onResponse({ text: responseText });
 
-
-                                // speakText(responseText);
+                                // Store message history
+                                const newHistory = [
+                                    ...chatHistory,
+                                    { "text": body.messages[body.messages.length - 1].text, "role": "user" },
+                                    { "text": responseText, "role": "ai" }
+                                ];
+                                setChatHistory(newHistory);
+                                localStorage.setItem("chatHistory", JSON.stringify(newHistory));
                             } else {
                                 signals.onResponse({ error: "No response from OpenAI" });
                             }
@@ -71,37 +87,17 @@ const ChatBot = () => {
                 }
             };
 
-
+            // Enable speech-to-text
             chatRef.current.speechToText = {
                 webSpeech: { language: "en-US" },
                 stopAfterSubmit: true
             };
         }
-    }, [apiKey]);
-
-    // const speakText = (text) => {
-    //     if ("speechSynthesis" in window) {
-    //         const utterance = new SpeechSynthesisUtterance(text);
-    //         utterance.lang = "en-US";
-    //         utterance.volume = 1.0;
-    //         utterance.pitch = 1.0;
-    //         utterance.rate = 1.0;
-    //         window.speechSynthesis.speak(utterance);
-    //     } else {
-    //         alert("Text-to-Speech is not supported in this browser.");
-    //     }
-    // };
+    }, [apiKey, chatHistory]);
 
     return (
-        <div style={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "80vh"
-        }}>
+        <div className="chatbot-container">
             <deep-chat ref={chatRef}></deep-chat>
-
         </div>
     );
 };
