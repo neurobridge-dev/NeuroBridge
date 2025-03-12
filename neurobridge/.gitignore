@@ -1,0 +1,39 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Dependencies
+/node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+
+# Production
+/build/
+/dist/ # Add this if using Vite or Webpack
+
+# Misc
+.DS_Store
+Thumbs.db
+.cache/
+.config/
+
+# Ignore environment files (Protect API Keys)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignore npm & yarn debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE & Editor settings (JetBrains/WebStorm, VS Code)
+.idea/
+.vscode/
+*.iml
+
+# Lockfile (Optional - keep it if you want strict versions)
+# /package-lock.json
