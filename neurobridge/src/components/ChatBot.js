@@ -8,6 +8,7 @@ const ChatBot = () => {
     const apiKey = process.env.REACT_APP_OPENAI_KEY;
 
 
+
     useEffect(() => {
         if (chatRef.current) {
             chatRef.current.style.width = "100vw";
