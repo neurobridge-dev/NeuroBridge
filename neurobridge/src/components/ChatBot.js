@@ -5,7 +5,7 @@ const ChatBot = () => {
     const chatRef = useRef(null);
     const [chatHistory, setChatHistory] = useState([]);
 
-    const apiKey = process.env.REACT_APP_OPENAI_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
 
     useEffect(() => {
         if (chatRef.current) {
