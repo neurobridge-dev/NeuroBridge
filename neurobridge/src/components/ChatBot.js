@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import "deep-chat"; // Import DeepChat Web Component
+import "deep-chat";
 
 const ChatBot = () => {
     const chatRef = useRef(null);
