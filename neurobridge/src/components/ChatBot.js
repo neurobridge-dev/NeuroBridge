@@ -76,6 +76,8 @@ const ChatBot = () => {
     return (
         <div className="flex flex-col w-screen h-screen pt-[70px] pb-[30px]">
 
+
+            <main className="flex-1 overflow-auto">
                 <deep-chat
                     ref={chatRef}
                     style={{
@@ -86,7 +88,7 @@ const ChatBot = () => {
                         justifyContent: "space-between",
                     }}
                 ></deep-chat>
-
+            </main>
         </div>
     );
 };
