@@ -18,12 +18,12 @@ const ChatBot = () => {
             return chatHistory;
         };
 
-        // Connect to your Netlify function
+        // Connect to Netlify function
         chatRef.current.connect = {
             url: "/.netlify/functions/chat",
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            stream: true,
+            stream: true, // Keep if you need streaming responses
             handler: async (body, signals) => {
                 try {
                     const formattedBody = {
@@ -49,7 +49,7 @@ const ChatBot = () => {
                         const responseText = data.choices[0].message.content;
                         signals.onResponse({ text: responseText });
 
-                        // Append the user and AI messages to state.
+                        // Append user & AI messages
                         const userText = body.messages[body.messages.length - 1].text;
                         setChatHistory((prev) => [
                             ...prev,
@@ -66,7 +66,7 @@ const ChatBot = () => {
             },
         };
 
-
+        // Optional speech-to-text
         chatRef.current.speechToText = {
             webSpeech: { language: "en-US" },
             stopAfterSubmit: true,
@@ -74,21 +74,21 @@ const ChatBot = () => {
     }, [chatHistory]);
 
     return (
-        <div className="absolute inset-0 w-screen h-screen flex flex-col pt-[70px] pb-[30px]">
+        <div className="flex flex-col w-screen h-screen pt-[70px] pb-[30px]">
 
-            <deep-chat
-                ref={chatRef}
-                className="flex-1 w-full h-full"
-                style={{
-                    width: "100vw",
-                    height: "calc(100vh - 70px)",
-                    paddingTop: "10px",
-                    borderRadius: "0px",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                }}
-            ></deep-chat>
+
+            <main className="flex-1 overflow-auto">
+                <deep-chat
+                    ref={chatRef}
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        width: "100%",
+                        height: "100%",
+                        justifyContent: "space-between",
+                    }}
+                ></deep-chat>
+            </main>
         </div>
     );
 };
