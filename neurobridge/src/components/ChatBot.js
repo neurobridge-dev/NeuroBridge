@@ -101,7 +101,7 @@ const ChatBot = () => {
     }, [chatHistory]);
 
     return (
-        <div className="absolute inset-0 w-screen h-screen flex flex-col pt-[70px]">
+        <div className="absolute inset-0 w-screen h-screen flex flex-col pt-[70px] pb-[30px]">
 
             <deep-chat
                 ref={chatRef}
@@ -115,17 +115,8 @@ const ChatBot = () => {
                     flexDirection: "column",
                     justifyContent: "space-between",
                 }}
-                messageStyles={{
-                    default: {
-                        shared: {
-                            innerContainer: {
-                                fontSize: "1rem",
-                            },
-                        },
-                    },
-                }}
-            ></deep-chat>
 
+            ></deep-chat>
         </div>
     );
 };
