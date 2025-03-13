@@ -38,14 +38,45 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding-bottom: 20px; /* Ensure space for the input */
+  box-sizing: border-box;
   z-index: 10;
 }
 
-/* Full-Screen Chat Component */
+
 deep-chat {
   width: 100vw !important;
-  height: 100% !important;
+  height: calc(100vh - 80px) !important;
   border-radius: 0 !important;
-  padding: 20px !important;
-  margin-bottom: 20px;
+  padding: 10px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
 }
+
+
+/* styling for mobile or smaller screens*/
+/*@media screen and (max-width: 768px) {*/
+/*  .chatbot-container {*/
+/*    height: calc(100vh - 80px);*/
+/*    padding-bottom: 0;*/
+/*  }*/
+
+/*  deep-chat {*/
+/*    height: calc(100vh - 80px);*/
+/*  }*/
+
+/*  deep-chat::part(input-container) {*/
+/*    position: fixed;*/
+/*    bottom: 0;*/
+/*    width: 100%;*/
+/*    background: white;*/
+/*    padding: 15px;*/
+/*  }*/
+
+/*  deep-chat::part(input) {*/
+/*    font-size: 14px;*/
+/*    padding: 10px;*/
+/*  }*/
+/*}*/
