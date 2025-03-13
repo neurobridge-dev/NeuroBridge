@@ -4,28 +4,30 @@ import chatConfig from "./chatConfig";
 
 const ChatBot = () => {
     const chatRef = useRef(null);
+
+    // Initialize chatHistory to an empty array.
+    // On first load, the loadHistory function will return the welcome message.
     const [chatHistory, setChatHistory] = useState([]);
 
     useEffect(() => {
-        if (chatRef.current) {
-            chatRef.current.loadHistory = (index) => {
-                if (chatHistory.length === 0) {
-                    return [{ "text": "Hey, how can I help you today?", "role": "ai" }];
-                }
-                return chatHistory;
-            };
+        if (!chatRef.current) return;
 
-            // Setup Chat API to use Netlify Function
-            chatRef.current.connect = {
-                url: "/.netlify/functions/chat",
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                stream: true,
-                handler: (body, signals) => {
-                    console.log("Outgoing Request to Netlify:", body);
+        // loadHistory returns the current chatHistory.
+        // If chatHistory is empty (e.g. after a refresh), return a welcome message.
+        chatRef.current.loadHistory = () => {
+            if (chatHistory.length === 0) {
+                return [{ text: "Hey, how can I help you today?", role: "ai" }];
+            }
+            return chatHistory;
+        };
 
+        // Connect to your Netlify function
+        chatRef.current.connect = {
+            url: "/.netlify/functions/chat",
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            handler: async (body, signals) => {
+                try {
                     const formattedBody = {
                         model: chatConfig.model,
                         messages: [
@@ -38,46 +40,39 @@ const ChatBot = () => {
                         temperature: chatConfig.temperature,
                     };
 
-                    // Call Netlify function instead of OpenAI API
-                    fetch("/.netlify/functions/chat", {
+                    const response = await fetch("/.netlify/functions/chat", {
                         method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(formattedBody)
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log("Netlify Function Response:", data);
-                            if (data.choices && data.choices.length > 0) {
-                                const responseText = data.choices[0].message.content;
-                                signals.onResponse({ text: responseText });
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(formattedBody),
+                    });
+                    const data = await response.json();
 
-                                // Store message history
-                                const newHistory = [
-                                    ...chatHistory,
-                                    { "text": body.messages[body.messages.length - 1].text, "role": "user" },
-                                    { "text": responseText, "role": "ai" }
-                                ];
-                                setChatHistory(newHistory);
-                                localStorage.setItem("chatHistory", JSON.stringify(newHistory));
-                            } else {
-                                signals.onResponse({ error: "No response from AI" });
-                            }
-                        })
-                        .catch(error => {
-                            console.error("API Error:", error);
-                            signals.onResponse({ error: "Failed to fetch response" });
-                        });
+                    if (data.choices && data.choices.length > 0) {
+                        const responseText = data.choices[0].message.content;
+                        signals.onResponse({ text: responseText });
+
+                        // Append the user and AI messages to state.
+                        const userText = body.messages[body.messages.length - 1].text;
+                        setChatHistory((prev) => [
+                            ...prev,
+                            { text: userText, role: "user" },
+                            { text: responseText, role: "ai" },
+                        ]);
+                    } else {
+                        signals.onResponse({ error: "No response from AI" });
+                    }
+                } catch (err) {
+                    console.error("API Error:", err);
+                    signals.onResponse({ error: "Failed to fetch response" });
                 }
-            };
+            },
+        };
 
-            // Enable speech-to-text
-            chatRef.current.speechToText = {
-                webSpeech: { language: "en-US" },
-                stopAfterSubmit: true
-            };
-        }
+
+        chatRef.current.speechToText = {
+            webSpeech: { language: "en-US" },
+            stopAfterSubmit: true,
+        };
     }, [chatHistory]);
 
     return (
@@ -95,7 +90,6 @@ const ChatBot = () => {
                     flexDirection: "column",
                     justifyContent: "space-between",
                 }}
-
             ></deep-chat>
         </div>
     );
