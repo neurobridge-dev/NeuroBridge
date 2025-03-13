@@ -7,13 +7,6 @@ const ChatBot = () => {
 
     useEffect(() => {
         if (chatRef.current) {
-            chatRef.current.style.width = "100vw";
-            chatRef.current.style.height = "calc(100vh - 100px)";
-            chatRef.current.style.marginTop = "100px";
-            chatRef.current.style.borderRadius = "0";
-            chatRef.current.style.padding = "0";
-
-            // Load chat history
             chatRef.current.loadHistory = (index) => {
                 if (chatHistory.length === 0) {
                     return [{ "text": "Hey, how can I help you today?", "role": "ai" }];
@@ -65,7 +58,7 @@ const ChatBot = () => {
                         temperature: 0.5
                     };
 
-                    // ✅ Call Netlify function instead of OpenAI API
+                    // Call Netlify function instead of OpenAI API
                     fetch("/.netlify/functions/chat", {
                         method: "POST",
                         headers: {
@@ -108,8 +101,31 @@ const ChatBot = () => {
     }, [chatHistory]);
 
     return (
-        <div className="chatbot-container">
-            <deep-chat ref={chatRef}></deep-chat>
+        <div className="absolute inset-0 w-screen h-screen flex flex-col pt-[70px]">
+
+            <deep-chat
+                ref={chatRef}
+                className="flex-1 w-full h-full"
+                style={{
+                    width: "100vw",
+                    height: "calc(100vh - 70px)",
+                    paddingTop: "10px",
+                    borderRadius: "0px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                }}
+                messageStyles={{
+                    default: {
+                        shared: {
+                            innerContainer: {
+                                fontSize: "1rem",
+                            },
+                        },
+                    },
+                }}
+            ></deep-chat>
+
         </div>
     );
 };
