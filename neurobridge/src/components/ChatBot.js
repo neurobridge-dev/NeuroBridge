@@ -5,15 +5,12 @@ import chatConfig from "./chatConfig";
 const ChatBot = () => {
     const chatRef = useRef(null);
 
-    // Initialize chatHistory to an empty array.
-    // On first load, the loadHistory function will return the welcome message.
     const [chatHistory, setChatHistory] = useState([]);
 
     useEffect(() => {
         if (!chatRef.current) return;
 
-        // loadHistory returns the current chatHistory.
-        // If chatHistory is empty (e.g. after a refresh), return a welcome message.
+
         chatRef.current.loadHistory = () => {
             if (chatHistory.length === 0) {
                 return [{ text: "Hey, how can I help you today?", role: "ai" }];
@@ -26,6 +23,7 @@ const ChatBot = () => {
             url: "/.netlify/functions/chat",
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            stream: true,
             handler: async (body, signals) => {
                 try {
                     const formattedBody = {
