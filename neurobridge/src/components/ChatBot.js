@@ -4,37 +4,40 @@ import chatConfig from "./chatConfig";
 
 const ChatBot = () => {
     const chatRef = useRef(null);
-
-    const [chatHistory, setChatHistory] = useState([]);
+    const chatHistoryRef = useRef([]);
 
     useEffect(() => {
         if (!chatRef.current) return;
 
-
         chatRef.current.loadHistory = () => {
-            if (chatHistory.length === 0) {
-                return [{ text: "Hey, how can I help you today?", role: "ai" }];
+            if (chatHistoryRef.current.length === 0) {
+                return [{ text: "Hey, how can I help you today?", role: "assistant" }];
             }
-            return chatHistory;
+            return chatHistoryRef.current;
         };
 
-        // Connect to Netlify function
         chatRef.current.connect = {
             url: "/.netlify/functions/chat",
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            stream: true, // Keep if you need streaming responses
+            stream: false,
             handler: async (body, signals) => {
                 try {
+                    const fullMessageHistory = [
+                        { role: "system", content: chatConfig.systemMessage },
+                        ...chatHistoryRef.current.map((msg) => ({
+                            role: msg.role,
+                            content: msg.text,
+                        })),
+                        {
+                            role: "user",
+                            content: body.messages[body.messages.length - 1].text,
+                        },
+                    ];
+
                     const formattedBody = {
                         model: chatConfig.model,
-                        messages: [
-                            { role: "system", content: chatConfig.systemMessage },
-                            ...body.messages.map((msg) => ({
-                                role: msg.role || "user",
-                                content: msg.text || "",
-                            })),
-                        ],
+                        messages: fullMessageHistory,
                         temperature: chatConfig.temperature,
                     };
 
@@ -43,19 +46,18 @@ const ChatBot = () => {
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(formattedBody),
                     });
+
                     const data = await response.json();
 
                     if (data.choices && data.choices.length > 0) {
                         const responseText = data.choices[0].message.content;
                         signals.onResponse({ text: responseText });
 
-                        // Append user & AI messages
-                        const userText = body.messages[body.messages.length - 1].text;
-                        setChatHistory((prev) => [
-                            ...prev,
-                            { text: userText, role: "user" },
-                            { text: responseText, role: "ai" },
-                        ]);
+
+                        chatHistoryRef.current.push(
+                            { text: body.messages[body.messages.length - 1].text, role: "user" },
+                            { text: responseText, role: "assistant" }
+                        );
                     } else {
                         signals.onResponse({ error: "No response from AI" });
                     }
@@ -66,12 +68,12 @@ const ChatBot = () => {
             },
         };
 
-        // Optional speech-to-text
         chatRef.current.speechToText = {
             webSpeech: { language: "en-US" },
             stopAfterSubmit: true,
         };
-    }, [chatHistory]);
+    }, []);
+
 
     return (
         <div className="flex flex-col w-screen h-screen pt-[70px] pb-[30px]">
