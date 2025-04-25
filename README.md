@@ -8,9 +8,9 @@ An AI powered chatbot that helps answer question related to neurodiversity round
 - This repository ia also connected with [Netlify](https://www.netlify.com/) for the ease of use.
 - To have the website running as intended:
     1. Get an OpenAI API key and save it as it can be viewed only once. [How to get OpenAI key](https://medium.com/@lorenzozar/how-to-get-your-own-openai-api-key-f4d44e60c327).
-    2. Add the API key as an enviornment variable in Netlify. The variable name is *< add name >* and the place holder has been created.
+    2. Add the API key as an enviornment variable in Netlify. The variable name is *OPENAI_KEY* and the place holder has been created.
     [Edit enviornment variables in Netlify](https://docs.netlify.com/environment-variables/get-started/#update-variables-with-the-netlify-ui).
-- Once the above step has been completed, the chatbot can be used via [website]().
+- Once the above step has been completed, the chatbot can be used via [neurobridgebot.netlify.app](neurobridgebot.netlify.app).
 
 ## Technologies Used
 
