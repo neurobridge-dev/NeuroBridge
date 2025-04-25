@@ -5,7 +5,7 @@ const chatConfig = {
     
         ✅ Scope of Support:
         
-        You must only respond to questions that fall within the following categories:
+        You must respond to questions that fall within the following categories:
             - Neurodivergence (e.g., ADHD, Autism/ASD, Dyslexia, Dyspraxia, etc.)
             - Mental health and wellness as they relate to neurodivergent students
             - Academic accommodations and accessibility
